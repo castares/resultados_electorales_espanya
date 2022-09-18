@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "Resultados Electorales en España"
+version = "0.1.0"
+description = ""
+authors = ["César C. <cesar.castares@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = ">=3.9,<3.11"
+pandas = "^1.4.3"
+
+[tool.poetry.dev-dependencies]
+pandas-stubs = "^1.4.3"
+pytest = "^7.1.2"
+black = "^22.8.0"
+mypy = "^0.971"
+flake8 = "^5.0.4"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

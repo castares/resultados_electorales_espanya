@@ -1,41 +1,63 @@
-from dataclasses import dataclass
+from collections.abc import Callable
+from enum import Enum, auto
 
-import pandas as pd
-
-from election_data_filter import (
-    SupportsFilterElectionData,
-    build_election_data,
-)
-from area_type_processor import (
-    SupportsSumVotesPerArea,
-    build_area_processor,
-)
-from electoral_system_processor import (
-    SupportsComputeResultsPerAlgorithm,
-    build_electoral_algorithm,
-)
+from pandas import DataFrame, Series
 
 
-# TODO: Convert all area_types, parties and electoral algorithms to Enums
+class Total(int, Enum):
+    CONGRESO = 350
 
 
-@dataclass
-class ResultsCalculator:
-    election_data: SupportsFilterElectionData
-    area_processor: SupportsSumVotesPerArea
-    electoral_system: SupportsComputeResultsPerAlgorithm
-
-    def compute_results(self):
-        ...
+class ElectoralSystem(str, Enum):
+    LARGEST_REMAINDER = auto()
+    DHONDT = auto()
 
 
-def build_results_calculator(election, area_split, electoral_system):
-    return ResultsCalculator(
-        election_data=build_election_data(election),
-        area_processor=build_area_processor(area_split),
-        electoral_system=build_electoral_algorithm(electoral_system),
+def compute_largest_remainder(
+    data: DataFrame, total_seats: Total = Total.CONGRESO
+) -> DataFrame:
+    __import__("pdb").set_trace()
+    total_votes: int = data.loc["Votos válidos"].sum()
+    hare_quota: float = total_votes / total_seats
+    # TODO: from here computation should be applied to each row.
+    data.loc["votes/quota"] = data.loc["Votos válidos"] / hare_quota
+    data.loc["automatic_seats"] = data.loc["votes/quota"].astype("int")
+    data.loc["remainder"] = (
+        data.loc["votes/quota"] - data.loc["automatic_seats"]
     )
+    remainder_seats = total_seats - data.loc["automatic_seats"].sum()
+    data = data.sort_values(by="remainder", axis=1, ascending=False)
+    data.loc["highest_remainder_seats"] = 0
+    for idx in range(0, int(remainder_seats)):
+        column = data.columns[idx]
+        data.loc["highest_remainder_seats", column] += 1
+    data.loc["total_seats"] = (
+        data.loc["automatic_seats"] + data.loc["highest_remainder_seats"]
+    )
+    return data
 
 
-if __name__ == "__main__":
-    x = build_results_calculator("asdf", "asdf", "asdf")
+def compute_dhondt(data: DataFrame) -> DataFrame:
+    pass
+
+
+class ResultsCalculator:
+
+    _algorithm: dict[ElectoralSystem, Callable] = {
+        ElectoralSystem.LARGEST_REMAINDER: compute_largest_remainder,
+        ElectoralSystem.DHONDT: compute_dhondt,
+    }
+
+    def compute_results(
+        self,
+        data,
+        electoral_system: ElectoralSystem,
+        total_seats: Total.CONGRESO,
+    ):
+        algorithm = self._algorithm.get(electoral_system)
+        if not algorithm:
+            raise NameError(
+                "Invalid Electoral System. Please choose a valid one."
+            )
+        results: DataFrame = algorithm(data, total_seats=total_seats)
+        return results
