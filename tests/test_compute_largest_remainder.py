@@ -101,6 +101,4 @@ def test_compute_largest_remainder(input_data, expected_results):
     results: DataFrame = compute_largest_remainder(input_data, total_seats=10)
     results = results[expected_results.columns]
 
-    assert results.loc["total_seats"].equals(
-        expected_results.loc["total_seats"]
-    )
+    assert results.loc["total_seats"].equals(expected_results.loc["total_seats"])

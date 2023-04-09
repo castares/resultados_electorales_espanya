@@ -1,5 +1,4 @@
-from dataclasses import dataclass
-from enum import Enum, auto
+from enum import Enum
 from typing import Optional
 
 from pandas import DataFrame
@@ -21,6 +20,6 @@ class AreaProcessor:
     def data_by_area(self, data: DataFrame, area: Area):
         area_field: Optional[str] = self._areas.get(area)
         if not area_field:
-            raise NameError("area is not valid. Please select valid area.")
+            raise NameError("Area is not valid. Please select valid area.")
         data_by_area = data.groupby(by=[area_field]).sum()
         return data_by_area

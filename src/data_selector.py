@@ -1,6 +1,4 @@
-from dataclasses import dataclass
-from enum import Enum, auto
-from typing import Protocol
+from enum import Enum
 
 from pandas import DataFrame
 import pandas as pd

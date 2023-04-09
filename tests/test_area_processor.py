@@ -5,7 +5,7 @@ from pandas import DataFrame
 
 
 @pytest.fixture(scope="module")
-def data() -> DataSelector:
+def data() -> DataFrame:
     data_selector = DataSelector()
     return data_selector.select_data(Election.CONGRESO_2019)
 
