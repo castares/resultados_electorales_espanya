@@ -26,7 +26,7 @@ def input_data():
                 "Votos válidos": 3100.0,
             },
         }
-    )
+    ).T
 
 
 @pytest.fixture(scope="module")
@@ -99,6 +99,6 @@ def expected_results():
 
 def test_compute_largest_remainder(input_data, expected_results):
     results: DataFrame = compute_largest_remainder(input_data, total_seats=10)
-    results = results[expected_results.columns]
-
-    assert results.loc["total_seats"].equals(expected_results.loc["total_seats"])
+    ordered_results = results.sort_index()
+    ordered_expected_results = expected_results.loc["total_seats"].sort_index().astype('int64')
+    assert ordered_results.loc[:, "total_seats"].equals(ordered_expected_results)
