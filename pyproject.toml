@@ -5,8 +5,11 @@ description = ""
 authors = ["César C. <cesar.castares@gmail.com>"]
 
 [tool.poetry.dependencies]
-python = ">=3.9,<3.11"
+python = ">=3.9,<3.9.7 || >3.9.7,<3.11"
 pandas = "^1.4.3"
+streamlit = "^1.24.1"
+altair = "^5.0.1"
+polars = "^0.18.8"
 
 [tool.poetry.dev-dependencies]
 pandas-stubs = "^1.4.3"
@@ -14,6 +17,7 @@ pytest = "^7.1.2"
 black = "^22.8.0"
 mypy = "^0.971"
 flake8 = "^5.0.4"
+ipykernel = "^6.24.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

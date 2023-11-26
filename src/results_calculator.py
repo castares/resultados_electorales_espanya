@@ -57,4 +57,6 @@ class ResultsCalculator:
         if not algorithm:
             raise NameError("Invalid Electoral System. Please choose a valid one.")
         results: DataFrame = algorithm(data, total_seats=total_seats)
-        return results.sort_values(by='total_seats', axis=0, ascending=False)
+        return results.sort_values(
+            by="total_seats", axis=0, ascending=False
+        ).reset_index()

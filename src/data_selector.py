@@ -10,7 +10,7 @@ class Election(str, Enum):
 
 class DataSelector:
     _elections: dict[Election, str] = {
-        Election.CONGRESO_2019: "./data/csv/congreso_2019.csv",
+        Election.CONGRESO_2019: "./data/cleaned_data/cleaned_congreso_2019.csv",
     }
 
     def select_data(self, election: Election) -> DataFrame:

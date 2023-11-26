@@ -15,7 +15,7 @@ def main():
     results: DataFrame = results_calculator.compute_results(
         data, ElectoralSystem.LARGEST_REMAINDER, TotalSeats.CONGRESO
     )
-    print(results)
+    return results
 
 
 if __name__ == "__main__":
