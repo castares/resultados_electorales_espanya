@@ -18,18 +18,6 @@ def main():
         data, ElectoralSystem.LARGEST_REMAINDER, TotalSeats.CONGRESO
     )
 
-    # TODO: extract to a module
-    spain_map: GeoDataFrame = get_spain_map()
-    data = data.drop(data[data["Nombre de Comunidad"] == "Ciudad de Ceuta"].index)
-    data = data.drop(data[data["Nombre de Comunidad"] == "Ciudad de Melilla"].index)
-    data.sort_values(by=["Nombre de Comunidad"], ascending=False)
-    data["Nombre de Comunidad"] = data["Nombre de Comunidad"].str.replace(" ", "")
-    data = GeoDataFrame(
-        data.merge(
-            spain_map, how="left", left_on="Nombre de Comunidad", right_on="NAME_1"
-        )
-    )
-    data = data.drop(columns="NAME_1")
 
     return data
 

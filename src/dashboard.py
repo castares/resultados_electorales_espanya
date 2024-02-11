@@ -28,6 +28,7 @@ with left_sidebar:
         label="Selecciona una granularidad",
         options=(area for area in Area),
         format_func=_display_enum_value,
+        index=1
     )
     option_algorithm = st.selectbox(
         label="Selecciona un sistema electoral",
@@ -35,40 +36,35 @@ with left_sidebar:
         format_func=_display_enum_value,
     )
 
+
 data_selector: DataSelector = DataSelector()
 area_processor: AreaProcessor = AreaProcessor()
 results_calculator: ResultsCalculator = ResultsCalculator()
 
 election_data: DataFrame = data_selector.select_data(option_elecciones)
 area_data = area_processor.data_by_area(election_data, option_area)
-data: DataFrame = results_calculator.compute_results(
+results_data: DataFrame = results_calculator.compute_results(
     area_data, option_algorithm, TotalSeats.CONGRESO
 )
 
-area_field_value = area_processor.area_field_value
+spain_map_data: GeoDataFrame = get_spain_map(option_area)
 
-# TODO: extract to a module
-spain_map: GeoDataFrame = get_spain_map(option_area)
-
-if option_area == Area.CCAA:
-    data = data.drop(data[data["Nombre de Comunidad"] == "Ciudad de Ceuta"].index)
-    data = data.drop(data[data["Nombre de Comunidad"] == "Ciudad de Melilla"].index)
-    data.sort_values(by=["Nombre de Comunidad"], ascending=False)
-    data["Nombre de Comunidad"] = data["Nombre de Comunidad"].str.replace(" ", "")
 
 data = GeoDataFrame(
-    data.merge(
-        spain_map,
+    results_data.merge(
+        spain_map_data,
         how="left",
-        left_on=area_field_value,
-        right_on="NAME_1",
+        on=option_area.value,
     )
 )
-data = data.drop(columns="NAME_1")
+
+area_columns = [
+    "Comunidad Autónoma",
+    "Provincia",
+    "Municipio",
+]
 
 dimensions_columns = [
-    "Nombre de Comunidad",
-    "Nombre de Provincia",
     "Código de Provincia",
     "Código de Municipio",
     "Población",
@@ -105,7 +101,8 @@ candidatures_columns = [
     column
     for column in data.columns
     if column
-    not in dimensions_columns
+    not in area_columns
+    + dimensions_columns
     + global_metrics_columns
     + algorithm_columns
     + geom_columns
@@ -123,7 +120,7 @@ with left_sidebar:
 
 st.header("Resultados por Candidatura")
 
-st.dataframe(data[candidatures_columns], use_container_width=True)
+st.dataframe(data[[option_area.value] + candidatures_columns], use_container_width=True)
 
 # st.bar_chart(
 #     data,
@@ -134,14 +131,15 @@ st.dataframe(data[candidatures_columns], use_container_width=True)
 
 st.header(f"Ganadores por {option_area}")
 
-breakpoint()
 
 data["Winner"] = data[selected_candidatures].idxmax(axis=1)
 
+winners_data = data[["Winner"]].reset_index()
 geojson = data._to_geo()
 
+
 winners_map = px.choropleth_mapbox(
-    data[["Winner"]].reset_index(),
+    winners_data,
     geojson=geojson,
     locations="index",
     color="Winner",
@@ -153,9 +151,8 @@ winners_map = px.choropleth_mapbox(
     opacity=0.8,
     labels={"unemp": "unemployment rate"},
 )
-winners_map.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 0})
 
-st.plotly_chart(winners_map)
+st.plotly_chart(winners_map, sharing="streamlit")
 
 data_wo_geometry = data.drop(columns="geometry")
 
@@ -166,9 +163,9 @@ arc = (
     )
     .encode(
         theta=alt.Theta(field="PSOE", type="quantitative"),
-        color=alt.Color(field=area_field_value, type="nominal"),
+        color=alt.Color(field=option_area.value, type="nominal"),
     )
-    .properties(title="PSOE por Comunidad")
+    .properties(title=f"PSOE por {option_area.value}")
 )
 
 

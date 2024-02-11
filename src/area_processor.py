@@ -10,19 +10,53 @@ class Area(str, Enum):
     MUNICIPIO = "Municipio"
 
 
-class AreaProcessor:
-    _areas: dict[Area, str] = {
-        Area.CCAA: "Nombre de Comunidad",
-        Area.PROVINCIA: "Nombre de Provincia",
-        Area.MUNICIPIO: "Nombre de Municipio",
-    }
-    area_field_value: str
+# CCAA = {
+#     "name": "Comunidad Autónoma",
+#     "field_value": "Nombre de Comunidad",
+#     "map_file": "./data/spain_geojson/gadm41_ESP_1.json.zip",
+# }
+# PROVINCIA = {
+#     "name": "Provincia",
+#     "field_value": "Nombre de Provincia",
+#     "map_file": "./data/spain_geojson/gadm41_ESP_2.json.zip",
+#         }
+# MUNICIPIO = {
+#     "name": "Municipio",
+#     "field_value": "Nombre de Municipio",
+#     "map_file": "./data/spain_geojson/gadm41_ESP_3.json.zip",
+#         }
 
+
+class AreaProcessor:
     def data_by_area(self, data: DataFrame, area: Area):
-        area_field: Optional[str] = self._areas.get(area)
-        # TODO: Refactor to avoid side-effects
-        self.area_field_value = area_field
-        if not area_field:
+        if area == Area.CCAA:
+            # TODO: Separate Ceuta & Melilla multipolygons
+            data = data.drop(
+                data[data["Nombre de Comunidad"] == "Ciudad de Ceuta"].index
+            )
+            data = data.drop(
+                data[data["Nombre de Comunidad"] == "Ciudad de Melilla"].index
+            )
+            data.sort_values(by=["Nombre de Comunidad"], ascending=False)
+            data["Nombre de Comunidad"] = data["Nombre de Comunidad"].str.replace(
+                " ", ""
+            )
+            data = data.rename(
+                columns={"Nombre de Comunidad": "Comunidad Autónoma"},
+                errors="raise",
+            )
+        elif area == Area.PROVINCIA:
+            data = data.rename(
+                columns={"Nombre de Provincia": "Provincia"},
+                errors="raise",
+            )
+        elif area == Area.MUNICIPIO:
+            data = data.rename(
+                columns={"Nombre de Municipio": "Municipio"},
+                errors="raise",
+            )
+        else:
             raise NameError("Area is not valid. Please select valid area.")
-        data_by_area = data.groupby(by=[area_field]).sum(numeric_only=True)
+
+        data_by_area = data.groupby(by=[area.value]).sum(numeric_only=True)
         return data_by_area
