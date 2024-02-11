@@ -1,5 +1,5 @@
 from collections.abc import Callable
-from enum import Enum, auto
+from enum import Enum
 from typing import Literal
 
 from pandas import DataFrame
@@ -10,8 +10,8 @@ class TotalSeats(int, Enum):
 
 
 class ElectoralSystem(str, Enum):
-    LARGEST_REMAINDER = auto()
-    DHONDT = auto()
+    LARGEST_REMAINDER = "Proporcional"
+    DHONDT = "Ley D'Hondt"
 
 
 def compute_largest_remainder(
