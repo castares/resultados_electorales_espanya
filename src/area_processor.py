@@ -21,5 +21,5 @@ class AreaProcessor:
         area_field: Optional[str] = self._areas.get(area)
         if not area_field:
             raise NameError("Area is not valid. Please select valid area.")
-        data_by_area = data.groupby(by=[area_field]).sum()
+        data_by_area = data.groupby(by=[area_field]).sum(numeric_only=True)
         return data_by_area
